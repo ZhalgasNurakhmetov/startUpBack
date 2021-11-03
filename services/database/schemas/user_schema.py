@@ -6,7 +6,7 @@ class UserBaseSchema(BaseModel):
     firstName: str
     lastName: str
     birthDate: str
-    email: str
+    username: str
     city: str
 
 

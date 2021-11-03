@@ -11,7 +11,7 @@ class UserModel(Base):
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
     birthDate = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
+    username = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     city = Column(String, nullable=False)
     about = Column(Text, nullable=True, default=None)
@@ -26,8 +26,12 @@ class UserModel(Base):
         db.refresh(self)
 
     @staticmethod
-    def get_user_by_email(email: str, db: Session):
-        return db.query(UserModel).filter(UserModel.email == email).first()
+    def get_user_by_username(username: str, db: Session):
+        return db.query(UserModel).filter(UserModel.username == username).first()
+
+    @staticmethod
+    def get_user_by_id(id: str, db: Session):
+        return db.query(UserModel).filter(UserModel.id == id).first()
 
     def json(self):
         return {
@@ -35,14 +39,15 @@ class UserModel(Base):
             'personalInfo': {
                 'firstName': self.firstName,
                 'lastName': self.lastName,
-                'email': self.email,
+                'username': self.username,
                 'birthDate': self.birthDate,
                 'city': self.city,
                 'about': self.about,
                 'photo': self.photo
             },
             'personalResourceList': [],
-            'interestedResourceList': []
+            'interestedResourceList': [],
+            'password': self.password,
         }
 
 

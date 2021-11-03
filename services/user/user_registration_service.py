@@ -21,14 +21,14 @@ class UserRegistration:
         from fastapi import HTTPException
         import uuid
 
-        user.email = user.email.lower()
-        if UserModel.get_user_by_email(user.email, db):
+        user.username = user.username.lower()
+        if UserModel.get_user_by_username(user.username, db):
             raise HTTPException(status_code=409, detail='Учетная запись уже существует')
         new_user_id = str(uuid.uuid4())
         user.password = pwd_context.hash(user.password)
         new_user = UserModel(**user.dict(), id=new_user_id)
         new_user.save_to_db(db)
-        self.send_gmail(user.email)
+        self.send_gmail(user.username)
         return new_user
 
     @staticmethod
