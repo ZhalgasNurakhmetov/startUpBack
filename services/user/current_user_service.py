@@ -5,16 +5,6 @@ from fastapi_utils.inferring_router import InferringRouter
 router = InferringRouter()
 
 
-def get_db():
-    from services.database.database_service import SessionLocal
-
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 @cbv(router)
 class CurrentUser:
     from fastapi import Depends

@@ -1,10 +1,8 @@
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
-from passlib.context import CryptContext
+
 
 router = InferringRouter()
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 @cbv(router)
@@ -17,7 +15,7 @@ class UserRegistration:
     @router.post('/api/user/registration', response_model=UserSchema)
     def register_user(self, user: UserCreateSchema, db: Session = Depends(get_db)):
         from services.database.models.db_base_models import UserModel
-
+        from services.auth.auth_service import pwd_context
         from fastapi import HTTPException
         import uuid
 

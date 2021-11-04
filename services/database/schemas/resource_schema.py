@@ -1,8 +1,10 @@
+from typing import Any
+from typing import Optional
+
 from pydantic import BaseModel
 
 
 class ResourceBaseSchema(BaseModel):
-    from typing import Optional
 
     personal: bool
     available: bool
@@ -24,7 +26,6 @@ class ResourceCreateSchema(ResourceBaseSchema):
 
 
 class ResourceSchema(ResourceBaseSchema):
-    from typing import Any
 
     id: str
     ownerId: str
