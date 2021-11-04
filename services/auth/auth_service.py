@@ -47,9 +47,9 @@ def get_user_by_id(user_id: str, db: Session):
 @cbv(router)
 class Auth:
     from services.auth.auth_schema import Token
-    from datetime import timedelta
-    from typing import Optional
     from services.auth.auth_schema import UserCredentials
+    from typing import Optional
+    from datetime import timedelta
 
     @router.post('/auth', response_model=Token)
     def authenticate(self, credentials: UserCredentials, db: Session = Depends(get_db)):
@@ -79,8 +79,9 @@ class Auth:
     def authenticate_user(credentials: UserCredentials, db: Session):
         from fastapi import HTTPException, status
 
-        user = Auth.get_user_by_username(credentials.username, db).json()
-        if not user:
+        try:
+            user = Auth.get_user_by_username(credentials.username, db).json()
+        except Exception:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Пользователь не найден')
         if not pwd_context.verify(credentials.password, user['password']):
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='Неверный логин или пароль')
