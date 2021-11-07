@@ -9,7 +9,10 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
+    from datetime import datetime
+
     id: Optional[str] = None
+    expires: Optional[datetime] = None
 
 
 class UserCredentials(BaseModel):

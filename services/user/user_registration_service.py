@@ -38,7 +38,7 @@ class UserRegistration:
         gmail_user = settings.MAIL_USERNAME
         gmail_password = settings.MAIL_PASSWORD
         message = EmailMessage()
-        body = '''Теперь Вы можете добавить книги, которыми Вы готовы поделиться и которые Вы хотели бы получить!.
+        body = '''Теперь Вы можете добавить книги, которыми Вы готовы поделиться и которые Вы хотели бы получить!
                 \nНайдите людей со схожими интересами!'''
         message.set_content(body)
         message['Subject'] = '[Bookberry] Добро пожаловать!'
