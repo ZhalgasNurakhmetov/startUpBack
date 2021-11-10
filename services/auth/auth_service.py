@@ -18,7 +18,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth")
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     from jose import jwt, JWTError
     from settings.settings import settings
-    from services.auth.auth_schema import TokenData
+    from services.auth.auth_schema import TokenDataSchema
     from datetime import datetime
     from services.error_handler.error_handler_service import user_not_found_exception, unauthorized_exception
 
@@ -30,7 +30,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
             raise user_not_found_exception
         if expires is None or datetime.utcnow() > datetime.fromtimestamp(expires):
             raise unauthorized_exception
-        token_data = TokenData(id=user_id, expires=expires)
+        token_data = TokenDataSchema(id=user_id, expires=expires)
     except JWTError:
         raise unauthorized_exception
     user = get_user_by_id(token_data.id, db)
@@ -59,11 +59,11 @@ def get_user_by_id(user_id: str, db: Session):
 
 @cbv(router)
 class Auth:
-    from services.auth.auth_schema import Token
-    from services.auth.auth_schema import UserCredentials
+    from services.auth.auth_schema import TokenSchema
+    from services.auth.auth_schema import UserCredentialsSchema
 
-    @router.post('/auth', response_model=Token)
-    def authenticate(self, credentials: UserCredentials, db: Session = Depends(get_db)):
+    @router.post('/auth', response_model=TokenSchema)
+    def authenticate(self, credentials: UserCredentialsSchema, db: Session = Depends(get_db)):
         from datetime import timedelta
         from settings.settings import settings
 
@@ -72,7 +72,7 @@ class Auth:
         return generate_access_token(data={"sub": user.id}, expires_delta=access_token_expires)
 
     @staticmethod
-    def authenticate_user(credentials: UserCredentials, db: Session):
+    def authenticate_user(credentials: UserCredentialsSchema, db: Session):
         from services.database.models.db_base_models import UserModel
         from services.error_handler.error_handler_service import user_not_found_exception, credentials_exception
 

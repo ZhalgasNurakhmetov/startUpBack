@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class PasswordResetRequestSchema(BaseModel):
+class PasswordResetSchema(BaseModel):
     username: str
 
 

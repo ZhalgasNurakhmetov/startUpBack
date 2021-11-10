@@ -3,18 +3,18 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class Token(BaseModel):
+class TokenSchema(BaseModel):
     access_token: str
     token_type: str
 
 
-class TokenData(BaseModel):
+class TokenDataSchema(BaseModel):
     from datetime import datetime
 
     id: Optional[str] = None
     expires: Optional[datetime] = None
 
 
-class UserCredentials(BaseModel):
+class UserCredentialsSchema(BaseModel):
     username: str
     password: str

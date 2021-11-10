@@ -10,11 +10,11 @@ class PasswordReset:
     from services.database.database_service import get_db
     from sqlalchemy.orm import Session
     from fastapi import Depends
-    from services.password.schema.password_reset_request_schema import PasswordResetRequestSchema
+    from services.password.schema.password_reset_request_schema import PasswordResetSchema
     from fastapi import Request
 
     @router.post('/api/password/reset')
-    def password_reset_request(self,  user_credential: PasswordResetRequestSchema, request: Request, db: Session = Depends(get_db)):
+    def reset_password(self, user_credential: PasswordResetSchema, request: Request, db: Session = Depends(get_db)):
         from services.database.models.db_base_models import UserModel
         from services.auth.auth_service import generate_access_token
         from datetime import timedelta
@@ -54,7 +54,7 @@ class PasswordReset:
 
 
 @cbv(router)
-class NewPasswordSetForm:
+class NewPasswordSet:
     from fastapi.responses import HTMLResponse
     from fastapi import Request
     from services.password.schema.password_reset_request_schema import NewPasswordSchema
@@ -78,7 +78,7 @@ class NewPasswordSetForm:
         from settings.settings import settings
         from datetime import datetime
         from services.error_handler.error_handler_service import new_passwords_not_equal_exception
-        from services.auth.auth_schema import TokenData
+        from services.auth.auth_schema import TokenDataSchema
         from services.auth.auth_service import get_user_by_id
         from services.auth.auth_service import pwd_context
         from starlette.templating import Jinja2Templates
@@ -96,7 +96,7 @@ class NewPasswordSetForm:
                 raise user_not_found_exception
             if expires is None or datetime.utcnow() > datetime.fromtimestamp(expires):
                 raise unauthorized_exception
-            token_data = TokenData(id=user_id, expires=expires)
+            token_data = TokenDataSchema(id=user_id, expires=expires)
         except JWTError:
             raise unauthorized_exception
         user: UserModel = get_user_by_id(token_data.id, db)

@@ -1,11 +1,9 @@
-from services.user.current_user_service import router as UserGetRouter
-from services.user.user_registration_service import router as UserRegistrationRouter
+from services.user.current_user_service import router as CurrentUserServiceRouter
 from services.auth.auth_service import router as AuthServiceRouter
-from services.password.password_service import router as PasswordRouter
+from services.password.password_service import router as PasswordServiceRouter
 
 
 def initialize_routes(app):
-    app.include_router(UserRegistrationRouter)
-    app.include_router(UserGetRouter)
     app.include_router(AuthServiceRouter)
-    app.include_router(PasswordRouter)
+    app.include_router(CurrentUserServiceRouter)
+    app.include_router(PasswordServiceRouter)
