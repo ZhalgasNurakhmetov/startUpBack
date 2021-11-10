@@ -6,12 +6,18 @@ router = InferringRouter()
 
 
 @cbv(router)
-class PasswordReset:
-    from services.database.database_service import get_db
-    from sqlalchemy.orm import Session
-    from fastapi import Depends
+class Password:
     from services.password.schema.password_reset_request_schema import PasswordResetSchema
+    from fastapi.responses import HTMLResponse
     from fastapi import Request
+    from services.password.schema.password_reset_request_schema import NewPasswordSchema
+    from services.password.schema.password_reset_request_schema import ChangePasswordSchema
+    from services.auth.auth_service import get_current_user
+    from fastapi import Depends
+    from services.database.models.db_base_models import UserModel
+    from sqlalchemy.orm import Session
+    from services.database.database_service import get_db
+    from services.database.schemas.user_schema import UserSchema
 
     @router.post('/api/password/reset')
     def reset_password(self, user_credential: PasswordResetSchema, request: Request, db: Session = Depends(get_db)):
@@ -52,16 +58,6 @@ class PasswordReset:
         server.send_message(message)
         server.close()
 
-
-@cbv(router)
-class NewPasswordSet:
-    from fastapi.responses import HTMLResponse
-    from fastapi import Request
-    from services.password.schema.password_reset_request_schema import NewPasswordSchema
-    from services.database.database_service import get_db
-    from sqlalchemy.orm import Session
-    from fastapi import Depends
-
     @router.get('/api/password/reset/{token}', response_class=HTMLResponse)
     def get_reset_password_form(self, request: Request, token: str):
         from starlette.templating import Jinja2Templates
@@ -73,7 +69,7 @@ class NewPasswordSet:
         })
 
     @router.post('/api/password/reset/{token}', response_class=HTMLResponse)
-    def reset_password(self, request: Request, token: str, new_password_info: NewPasswordSchema, db: Session = Depends(get_db)):
+    def reset_password_by_token(self, request: Request, token: str, new_password_info: NewPasswordSchema, db: Session = Depends(get_db)):
         from jose import jwt, JWTError
         from settings.settings import settings
         from datetime import datetime
@@ -107,20 +103,9 @@ class NewPasswordSet:
 
         # TODO works in postman, in browser something is wrong
         templates = Jinja2Templates(directory="templates")
-        # return templates.TemplateResponse('reset_password_final.html', {
-        #     'request': request,
-        # })
-
-
-@cbv(router)
-class PasswordChange:
-    from services.password.schema.password_reset_request_schema import ChangePasswordSchema
-    from services.auth.auth_service import get_current_user
-    from fastapi import Depends
-    from services.database.models.db_base_models import UserModel
-    from sqlalchemy.orm import Session
-    from services.database.database_service import get_db
-    from services.database.schemas.user_schema import UserSchema
+        return templates.TemplateResponse('reset_password_final.html', {
+            'request': request,
+        })
 
     @router.post('/api/password/change', response_model=UserSchema)
     def change_password(self, change_password_info: ChangePasswordSchema, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -135,6 +120,3 @@ class PasswordChange:
         current_user.password = pwd_context.hash(change_password_info.newPassword)
         current_user.save_to_db(db)
         return current_user
-
-
-
