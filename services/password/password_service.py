@@ -14,14 +14,14 @@ class Password:
     from services.password.schema.password_reset_request_schema import ChangePasswordSchema
     from services.auth.auth_service import get_current_user
     from fastapi import Depends
-    from services.database.models.db_base_models import UserModel
+    from services.database.model.db_base_models import UserModel
     from sqlalchemy.orm import Session
     from services.database.database_service import get_db
-    from services.database.schemas.user_schema import UserSchema
+    from services.database.schema.user_schema import UserSchema
 
     @router.post('/api/password/reset')
     def reset_password(self, user_credential: PasswordResetSchema, request: Request, db: Session = Depends(get_db)):
-        from services.database.models.db_base_models import UserModel
+        from services.database.model.db_base_models import UserModel
         from services.auth.auth_service import generate_access_token
         from datetime import timedelta
         from services.error_handler.error_handler_service import user_not_found_exception
@@ -74,11 +74,11 @@ class Password:
         from settings.settings import settings
         from datetime import datetime
         from services.error_handler.error_handler_service import new_passwords_not_equal_exception
-        from services.auth.auth_schema import TokenDataSchema
+        from services.auth.schema.auth_schema import TokenDataSchema
         from services.auth.auth_service import get_user_by_id
         from services.auth.auth_service import pwd_context
         from starlette.templating import Jinja2Templates
-        from services.database.models.db_base_models import UserModel
+        from services.database.model.db_base_models import UserModel
         from services.error_handler.error_handler_service import user_not_found_exception, unauthorized_exception
 
         if not new_password_info.newPassword == new_password_info.newPasswordConfirm:

@@ -8,13 +8,13 @@ router = InferringRouter()
 class UserRegistration:
     from services.database.database_service import get_db
     from sqlalchemy.orm import Session
-    from services.database.schemas.user_schema import UserCreateSchema, UserSchema
+    from services.database.schema.user_schema import UserCreateSchema, UserSchema
     from fastapi import Depends
     from services.auth.auth_service import get_current_user
 
     @router.post('/api/user/registration', response_model=UserSchema)
     def create_user(self, user: UserCreateSchema, db: Session = Depends(get_db)):
-        from services.database.models.db_base_models import UserModel
+        from services.database.model.db_base_models import UserModel
         from services.auth.auth_service import pwd_context
         from services.error_handler.error_handler_service import user_already_exist_exception
         import uuid
