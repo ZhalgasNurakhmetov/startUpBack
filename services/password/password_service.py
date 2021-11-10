@@ -16,15 +16,15 @@ class PasswordResetRequest:
     @router.post('/api/password/reset')
     def password_reset_request(self,  userCredential: PasswordResetRequestSchema, request: Request, db: Session = Depends(get_db)):
         from services.database.models.db_base_models import UserModel
-        from fastapi import HTTPException
         from services.auth.auth_service import generate_access_token
         from datetime import timedelta
+        from services.error_handler.error_handler_service import user_not_found_exception
 
         userCredential.username = userCredential.username.lower()
         try:
             user: UserModel = UserModel.get_user_by_username(userCredential.username, db)
         except Exception:
-            raise HTTPException(status_code=404, detail='Учетная запись не найдена')
+            raise user_not_found_exception
         access_token_expires = timedelta(minutes=15)
         token = generate_access_token(data={"sub": user.id}, expires_delta=access_token_expires)
         self.send_gmail(user.username, token['access_token'], request.client.host)
@@ -77,41 +77,31 @@ class NewPasswordSetForm:
         from jose import jwt, JWTError
         from settings.settings import settings
         from datetime import datetime
-        from fastapi import HTTPException, status
+        from services.error_handler.error_handler_service import new_passwords_not_equal_exception
         from services.auth.auth_schema import TokenData
         from services.auth.auth_service import get_user_by_id
         from services.auth.auth_service import pwd_context
         from starlette.templating import Jinja2Templates
         from services.database.models.db_base_models import UserModel
+        from services.error_handler.error_handler_service import user_not_found_exception, unauthorized_exception
 
         if not new_password_info.newPassword == new_password_info.newPasswordConfirm:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Новые пароли не совпадают")
-
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Не авторизован",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-        token_expired_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Время действия токена истекло",
-        )
+            raise new_passwords_not_equal_exception
 
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
             user_id: str = payload.get("sub")
             expires: datetime = payload.get("exp")
             if user_id is None:
-                raise credentials_exception
+                raise user_not_found_exception
             if expires is None or datetime.utcnow() > datetime.fromtimestamp(expires):
-                raise token_expired_exception
+                raise unauthorized_exception
             token_data = TokenData(id=user_id, expires=expires)
         except JWTError:
-            raise credentials_exception
+            raise unauthorized_exception
         user: UserModel = get_user_by_id(token_data.id, db)
         if user is None:
-            raise credentials_exception
+            raise user_not_found_exception
         user.password = pwd_context.hash(new_password_info.newPassword)
         user.save_to_db(db)
 

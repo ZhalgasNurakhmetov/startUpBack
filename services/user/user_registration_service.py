@@ -16,12 +16,12 @@ class UserRegistration:
     def register_user(self, user: UserCreateSchema, db: Session = Depends(get_db)):
         from services.database.models.db_base_models import UserModel
         from services.auth.auth_service import pwd_context
-        from fastapi import HTTPException
+        from services.error_handler.error_handler_service import user_already_exist_exception
         import uuid
 
         user.username = user.username.lower()
         if UserModel.get_user_by_username(user.username, db):
-            raise HTTPException(status_code=409, detail='Учетная запись уже существует')
+            raise user_already_exist_exception
         new_user_id = str(uuid.uuid4())
         user.password = pwd_context.hash(user.password)
         new_user = UserModel(**user.dict(), id=new_user_id)
