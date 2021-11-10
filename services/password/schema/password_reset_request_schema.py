@@ -8,3 +8,7 @@ class PasswordResetRequestSchema(BaseModel):
 class NewPasswordSchema(BaseModel):
     newPassword: str
     newPasswordConfirm: str
+
+
+class ChangePasswordSchema(NewPasswordSchema):
+    oldPassword: str

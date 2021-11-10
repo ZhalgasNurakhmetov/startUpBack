@@ -28,7 +28,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         expires: datetime = payload.get("exp")
         if user_id is None:
             raise user_not_found_exception
-        if expires is None or datetime.utcnow() > expires:
+        if expires is None or datetime.utcnow() > datetime.fromtimestamp(expires):
             raise unauthorized_exception
         token_data = TokenData(id=user_id, expires=expires)
     except JWTError:

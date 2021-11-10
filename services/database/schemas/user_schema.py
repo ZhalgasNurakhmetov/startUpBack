@@ -23,3 +23,7 @@ class UserSchema(UserBaseSchema):
 
     class Config:
         orm_mode = True
+
+
+class UserChangePasswordSchema(UserSchema):
+    password: str

@@ -31,3 +31,8 @@ new_passwords_not_equal_exception = HTTPException(
     status_code=status.HTTP_406_NOT_ACCEPTABLE,
     detail="Новые пароли не совпадают",
 )
+
+current_password_exception = HTTPException(
+    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+    detail="Неверный текущий пароль"
+)

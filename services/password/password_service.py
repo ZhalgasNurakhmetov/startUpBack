@@ -6,7 +6,7 @@ router = InferringRouter()
 
 
 @cbv(router)
-class PasswordResetRequest:
+class PasswordReset:
     from services.database.database_service import get_db
     from sqlalchemy.orm import Session
     from fastapi import Depends
@@ -14,15 +14,15 @@ class PasswordResetRequest:
     from fastapi import Request
 
     @router.post('/api/password/reset')
-    def password_reset_request(self,  userCredential: PasswordResetRequestSchema, request: Request, db: Session = Depends(get_db)):
+    def password_reset_request(self,  user_credential: PasswordResetRequestSchema, request: Request, db: Session = Depends(get_db)):
         from services.database.models.db_base_models import UserModel
         from services.auth.auth_service import generate_access_token
         from datetime import timedelta
         from services.error_handler.error_handler_service import user_not_found_exception
 
-        userCredential.username = userCredential.username.lower()
+        user_credential.username = user_credential.username.lower()
         try:
-            user: UserModel = UserModel.get_user_by_username(userCredential.username, db)
+            user: UserModel = UserModel.get_user_by_username(user_credential.username, db)
         except Exception:
             raise user_not_found_exception
         access_token_expires = timedelta(minutes=15)
@@ -110,5 +110,31 @@ class NewPasswordSetForm:
         # return templates.TemplateResponse('reset_password_final.html', {
         #     'request': request,
         # })
+
+
+@cbv(router)
+class PasswordChange:
+    from services.password.schema.password_reset_request_schema import ChangePasswordSchema
+    from services.auth.auth_service import get_current_user
+    from fastapi import Depends
+    from services.database.models.db_base_models import UserModel
+    from sqlalchemy.orm import Session
+    from services.database.database_service import get_db
+    from services.database.schemas.user_schema import UserSchema
+
+    @router.post('/api/password/change', response_model=UserSchema)
+    def change_password(self, change_password_info: ChangePasswordSchema, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+        from services.error_handler.error_handler_service import new_passwords_not_equal_exception
+        from services.auth.auth_service import pwd_context
+        from services.error_handler.error_handler_service import current_password_exception
+
+        if not pwd_context.verify(change_password_info.oldPassword, current_user.password):
+            raise current_password_exception
+        if not change_password_info.newPassword == change_password_info.newPasswordConfirm:
+            raise new_passwords_not_equal_exception
+        current_user.password = pwd_context.hash(change_password_info.newPassword)
+        current_user.save_to_db(db)
+        return current_user
+
 
 
