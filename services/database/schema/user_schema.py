@@ -23,3 +23,11 @@ class UserSchema(UserBaseSchema):
 
     class Config:
         orm_mode = True
+
+
+class UserEditSchema(BaseModel):
+    firstName: str
+    lastName: str
+    birthDate: str
+    city: str
+    about: str

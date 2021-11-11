@@ -33,23 +33,6 @@ class UserModel(Base):
     def get_user_by_id(id: str, db: Session):
         return db.query(UserModel).filter(UserModel.id == id).first()
 
-    def json(self):
-        return {
-            'id': self.id,
-            'personalInfo': {
-                'firstName': self.firstName,
-                'lastName': self.lastName,
-                'username': self.username,
-                'birthDate': self.birthDate,
-                'city': self.city,
-                'about': self.about,
-                'photo': self.photo
-            },
-            'personalResourceList': [],
-            'interestedResourceList': [],
-            'password': self.password,
-        }
-
 
 class ResourceModel(Base):
     from sqlalchemy.orm import relationship, Session
@@ -79,3 +62,12 @@ class ResourceModel(Base):
         db.add(self)
         db.commit()
         db.refresh(self)
+
+    def delete_from_db(self, db: Session):
+        db.delete(self)
+        db.commit()
+        db.refresh()
+
+    @staticmethod
+    def get_resource_by_id(id: str, db: Session):
+        return db.query(ResourceModel).filter(ResourceModel.id == id).first()

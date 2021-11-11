@@ -1,11 +1,11 @@
+from datetime import timedelta
+
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from typing import Optional
-from datetime import timedelta
 
 from services.database.database_service import get_db
 
@@ -39,7 +39,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     return user
 
 
-def generate_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def generate_access_token(data: dict, expires_delta: timedelta = None):
     from datetime import datetime
     from jose import jwt
     from settings.settings import settings

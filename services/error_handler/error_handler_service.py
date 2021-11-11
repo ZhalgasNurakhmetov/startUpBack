@@ -6,6 +6,11 @@ user_not_found_exception = HTTPException(
     detail='Пользователь не найден',
 )
 
+resource_not_found_exception = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail='Ресурс не найден',
+)
+
 credentials_exception = HTTPException(
     status_code=status.HTTP_406_NOT_ACCEPTABLE,
     detail='Неверный логин или пароль',

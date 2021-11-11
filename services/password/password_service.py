@@ -35,29 +35,6 @@ class Password:
         token = generate_access_token(data={"sub": user.id}, expires_delta=access_token_expires)
         self.send_gmail(user.username, token['access_token'], request.client.host)
 
-    @staticmethod
-    def send_gmail(recipient_email: str, token: str, host: str):
-        from settings.settings import settings
-        from email.message import EmailMessage
-        import smtplib
-
-        gmail_user = settings.MAIL_USERNAME
-        gmail_password = settings.MAIL_PASSWORD
-        message = EmailMessage()
-        body = '''С вашего аккаунта был отправлен запрос на восстановление пароля.
-                \nЕсли Вы не отправляли запрос, игнорируйте данное сообщение!
-                \nДля восстановления пароля пройдите по ссылке\n{}:8000/api/password/reset/{}'''.format(host, token)
-        message.set_content(body)
-        message['Subject'] = '[Bookberry] Восстановление пароля!'
-        message['From'] = gmail_user
-        message['To'] = recipient_email
-        server = smtplib.SMTP(settings.MAIL_SERVER, settings.MAIL_PORT)
-        server.ehlo()
-        server.starttls()
-        server.login(gmail_user, gmail_password)
-        server.send_message(message)
-        server.close()
-
     @router.get('/api/password/reset/{token}', response_class=HTMLResponse)
     def get_reset_password_form(self, request: Request, token: str):
         from starlette.templating import Jinja2Templates
@@ -69,7 +46,13 @@ class Password:
         })
 
     @router.post('/api/password/reset/{token}', response_class=HTMLResponse)
-    def reset_password_by_token(self, request: Request, token: str, new_password_info: NewPasswordSchema, db: Session = Depends(get_db)):
+    def reset_password_by_token(
+            self,
+            request: Request,
+            token: str,
+            new_password_info: NewPasswordSchema,
+            db: Session = Depends(get_db)
+    ):
         from jose import jwt, JWTError
         from settings.settings import settings
         from datetime import datetime
@@ -108,7 +91,12 @@ class Password:
         })
 
     @router.post('/api/password/change', response_model=UserSchema)
-    def change_password(self, change_password_info: ChangePasswordSchema, current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
+    def change_password(
+            self,
+            change_password_info: ChangePasswordSchema,
+            current_user: UserModel = Depends(get_current_user),
+            db: Session = Depends(get_db)
+    ):
         from services.error_handler.error_handler_service import new_passwords_not_equal_exception
         from services.auth.auth_service import pwd_context
         from services.error_handler.error_handler_service import current_password_exception
@@ -120,3 +108,26 @@ class Password:
         current_user.password = pwd_context.hash(change_password_info.newPassword)
         current_user.save_to_db(db)
         return current_user
+
+    @staticmethod
+    def send_gmail(recipient_email: str, token: str, host: str):
+        from settings.settings import settings
+        from email.message import EmailMessage
+        import smtplib
+
+        gmail_user = settings.MAIL_USERNAME
+        gmail_password = settings.MAIL_PASSWORD
+        message = EmailMessage()
+        body = '''С вашего аккаунта был отправлен запрос на восстановление пароля.
+                \nЕсли Вы не отправляли запрос, игнорируйте данное сообщение!
+                \nДля восстановления пароля пройдите по ссылке\n{}:8000/api/password/reset/{}'''.format(host, token)
+        message.set_content(body)
+        message['Subject'] = '[Bookberry] Восстановление пароля!'
+        message['From'] = gmail_user
+        message['To'] = recipient_email
+        server = smtplib.SMTP(settings.MAIL_SERVER, settings.MAIL_PORT)
+        server.ehlo()
+        server.starttls()
+        server.login(gmail_user, gmail_password)
+        server.send_message(message)
+        server.close()

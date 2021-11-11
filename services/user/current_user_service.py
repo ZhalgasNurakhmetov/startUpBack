@@ -5,14 +5,15 @@ router = InferringRouter()
 
 
 @cbv(router)
-class UserRegistration:
+class CurrentUser:
     from services.database.database_service import get_db
     from sqlalchemy.orm import Session
-    from services.database.schema.user_schema import UserCreateSchema, UserSchema
+    from services.database.schema.user_schema import UserCreateSchema, UserSchema, UserEditSchema
     from fastapi import Depends
     from services.auth.auth_service import get_current_user
+    from services.database.model.db_base_models import UserModel
 
-    @router.post('/api/user/registration', response_model=UserSchema)
+    @router.post('/api/current_user/registration', response_model=UserSchema)
     def create_user(self, user: UserCreateSchema, db: Session = Depends(get_db)):
         from services.database.model.db_base_models import UserModel
         from services.auth.auth_service import pwd_context
@@ -28,6 +29,25 @@ class UserRegistration:
         new_user.save_to_db(db)
         self.send_gmail(user.username)
         return new_user
+
+    @router.get('/api/current_user/me', response_model=UserSchema)
+    def get_current_user(self, current_user: UserSchema = Depends(get_current_user)):
+        return current_user
+
+    @router.put('/api/current_user/edit', response_model=UserSchema)
+    def edit_user(
+            self,
+            user_info: UserEditSchema,
+            current_user: UserModel = Depends(get_current_user),
+            db: Session = Depends(get_db)
+    ):
+        current_user.firstName = user_info.firstName
+        current_user.lastName = user_info.lastName
+        current_user.city = user_info.city
+        current_user.birthDate = user_info.birthDate
+        current_user.about = user_info.about
+        current_user.save_to_db(db)
+        return current_user
 
     @staticmethod
     def send_gmail(recipient_email: str):
@@ -50,11 +70,3 @@ class UserRegistration:
         server.login(gmail_user, gmail_password)
         server.send_message(message)
         server.close()
-
-    @router.get('/api/user/me', response_model=UserSchema)
-    def get_current_user(self, current_user: UserSchema = Depends(get_current_user)):
-        return current_user
-
-    @router.put('/api/user/edit')
-    def edit_user(self):
-        pass

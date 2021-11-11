@@ -7,9 +7,8 @@ from pydantic import BaseModel
 class ResourceBaseSchema(BaseModel):
 
     personal: bool
-    available: bool
-    title: bool
-    author: bool
+    title: str
+    author: str
     year: Optional[str] = None
     pageCount: Optional[str] = None
     literature: str
@@ -21,13 +20,10 @@ class ResourceBaseSchema(BaseModel):
     condition: Optional[str] = None
 
 
-class ResourceCreateSchema(ResourceBaseSchema):
-    ownerId: str
-
-
 class ResourceSchema(ResourceBaseSchema):
 
     id: str
+    available: bool
     ownerId: str
     owner: Any
 
