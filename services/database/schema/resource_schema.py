@@ -1,4 +1,3 @@
-from typing import Any
 from typing import Optional
 
 from pydantic import BaseModel
@@ -20,12 +19,26 @@ class ResourceBaseSchema(BaseModel):
     condition: Optional[str] = None
 
 
+class OwnerSchema(BaseModel):
+    id: str
+    photo: Optional[str] = None
+    about: Optional[str] = None
+    firstName: str
+    lastName: str
+    birthDate: str
+    username: str
+    city: str
+
+    class Config:
+        orm_mode = True
+
+
 class ResourceSchema(ResourceBaseSchema):
 
     id: str
     available: bool
     ownerId: str
-    owner: Any
+    owner: OwnerSchema
 
     class Config:
         orm_mode = True

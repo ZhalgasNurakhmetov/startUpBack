@@ -21,6 +21,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     from services.auth.schema.auth_schema import TokenDataSchema
     from datetime import datetime
     from services.error_handler.error_handler_service import user_not_found_exception, unauthorized_exception
+    from services.database.model.db_base_models import UserModel
 
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
@@ -33,7 +34,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         token_data = TokenDataSchema(id=user_id, expires=expires)
     except JWTError:
         raise unauthorized_exception
-    user = get_user_by_id(token_data.id, db)
+    user: UserModel = UserModel.get_user_by_id(token_data.id, db)
     if user is None:
         raise user_not_found_exception
     return user
@@ -49,12 +50,6 @@ def generate_access_token(data: dict, expires_delta: timedelta = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return {"access_token": encoded_jwt, "token_type": "bearer"}
-
-
-def get_user_by_id(user_id: str, db: Session):
-    from services.database.model.db_base_models import UserModel
-
-    return UserModel.get_user_by_id(user_id, db)
 
 
 @cbv(router)
@@ -77,15 +72,9 @@ class Auth:
         from services.error_handler.error_handler_service import user_not_found_exception, credentials_exception
 
         try:
-            user: UserModel = Auth.get_user_by_username(credentials.username, db)
+            user: UserModel = UserModel.get_user_by_username(credentials.username, db)
         except Exception:
             raise user_not_found_exception
         if not pwd_context.verify(credentials.password, user.password):
             raise credentials_exception
         return user
-
-    @staticmethod
-    def get_user_by_username(username: str, db: Session):
-        from services.database.model.db_base_models import UserModel
-
-        return UserModel.get_user_by_username(username, db)

@@ -19,6 +19,7 @@ class CurrentUser:
         from services.auth.auth_service import pwd_context
         from services.error_handler.error_handler_service import user_already_exist_exception
         import uuid
+        from services.mail.mail_service import Mail
 
         user.username = user.username.lower()
         if UserModel.get_user_by_username(user.username, db):
@@ -27,7 +28,12 @@ class CurrentUser:
         user.password = pwd_context.hash(user.password)
         new_user = UserModel(**user.dict(), id=new_user_id)
         new_user.save_to_db(db)
-        self.send_gmail(user.username)
+        Mail.send_email(
+            user.username,
+            '[Bookberry] Добро пожаловать!',
+            '''Теперь Вы можете добавить книги, которыми Вы готовы поделиться и которые Вы хотели бы получить!
+                \nНайдите людей со схожими интересами'''
+        )
         return new_user
 
     @router.get('/api/current_user/me', response_model=UserSchema)

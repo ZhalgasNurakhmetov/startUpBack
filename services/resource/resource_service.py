@@ -72,7 +72,7 @@ class Resource:
 
         if not current_user:
             raise unauthorized_exception
-        resource: ResourceModel = ResourceModel.get_resource_by_id(resource_id)
+        resource: ResourceModel = ResourceModel.get_resource_by_id(resource_id, db)
         if not resource:
             raise resource_not_found_exception
         resource.delete_from_db(db)

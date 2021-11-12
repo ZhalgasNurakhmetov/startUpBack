@@ -7,11 +7,11 @@ router = InferringRouter()
 
 @cbv(router)
 class Password:
-    from services.password.schema.password_reset_request_schema import PasswordResetSchema
+    from services.password.schema.password_schema import PasswordResetSchema
     from fastapi.responses import HTMLResponse
     from fastapi import Request
-    from services.password.schema.password_reset_request_schema import NewPasswordSchema
-    from services.password.schema.password_reset_request_schema import ChangePasswordSchema
+    from services.password.schema.password_schema import NewPasswordSchema
+    from services.password.schema.password_schema import ChangePasswordSchema
     from services.auth.auth_service import get_current_user
     from fastapi import Depends
     from services.database.model.db_base_models import UserModel
@@ -25,6 +25,7 @@ class Password:
         from services.auth.auth_service import generate_access_token
         from datetime import timedelta
         from services.error_handler.error_handler_service import user_not_found_exception
+        from services.mail.mail_service import Mail
 
         user_credential.username = user_credential.username.lower()
         try:
@@ -33,7 +34,14 @@ class Password:
             raise user_not_found_exception
         access_token_expires = timedelta(minutes=15)
         token = generate_access_token(data={"sub": user.id}, expires_delta=access_token_expires)
-        self.send_gmail(user.username, token['access_token'], request.client.host)
+        Mail.send_email(
+            user.username,
+            '[Bookberry] Восстановление пароля!',
+            '''С вашего аккаунта был отправлен запрос на восстановление пароля.
+                \nЕсли Вы не отправляли запрос, игнорируйте данное сообщение!
+                \nДля восстановления пароля пройдите по ссылке\n{}:8000/api/password/reset/{}'''
+                .format(request.client.host, token['access_token'])
+        )
 
     @router.get('/api/password/reset/{token}', response_class=HTMLResponse)
     def get_reset_password_form(self, request: Request, token: str):
@@ -58,7 +66,6 @@ class Password:
         from datetime import datetime
         from services.error_handler.error_handler_service import new_passwords_not_equal_exception
         from services.auth.schema.auth_schema import TokenDataSchema
-        from services.auth.auth_service import get_user_by_id
         from services.auth.auth_service import pwd_context
         from starlette.templating import Jinja2Templates
         from services.database.model.db_base_models import UserModel
@@ -66,7 +73,6 @@ class Password:
 
         if not new_password_info.newPassword == new_password_info.newPasswordConfirm:
             raise new_passwords_not_equal_exception
-
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
             user_id: str = payload.get("sub")
@@ -78,7 +84,7 @@ class Password:
             token_data = TokenDataSchema(id=user_id, expires=expires)
         except JWTError:
             raise unauthorized_exception
-        user: UserModel = get_user_by_id(token_data.id, db)
+        user: UserModel = UserModel.get_user_by_id(token_data.id, db)
         if user is None:
             raise user_not_found_exception
         user.password = pwd_context.hash(new_password_info.newPassword)
