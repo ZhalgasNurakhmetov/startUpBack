@@ -17,8 +17,9 @@ class UserModel(Base):
     about = Column(Text, nullable=True, default=None)
     photo = Column(String, nullable=True, default=None)
     resourceList = relationship('ResourceModel', back_populates='owner')
+    likedResourceList = relationship('ResourceLikeModel', foreign_keys='ResourceLikeModel.user_id')
+
     # followed
-    # likedResources
 
     def save_to_db(self, db: Session):
         db.add(self)
@@ -57,6 +58,7 @@ class ResourceModel(Base):
     likes = Column(Integer, nullable=False, default=0)
     ownerId = Column(String, ForeignKey('users.id'))
     owner = relationship('UserModel', back_populates='resourceList')
+    likedUserList = relationship('ResourceLikeModel', back_populates='resource')
 
     def save_to_db(self, db: Session):
         db.add(self)
@@ -66,8 +68,34 @@ class ResourceModel(Base):
     def delete_from_db(self, db: Session):
         db.delete(self)
         db.commit()
-        db.refresh()
 
     @staticmethod
     def get_resource_by_id(id: str, db: Session):
         return db.query(ResourceModel).filter(ResourceModel.id == id).first()
+
+
+class ResourceLikeModel(Base):
+    from sqlalchemy import Column, String, ForeignKey
+    from sqlalchemy.orm import relationship, Session
+
+    __tablename__ = 'resource_like'
+
+    id = Column(String, primary_key=True, unique=True)
+    user_id = Column(String, ForeignKey('users.id'))
+    resource_id = Column(String, ForeignKey('resources.id'))
+    user = relationship('UserModel', back_populates='likedResourceList')
+    resource = relationship('ResourceModel', back_populates='likedUserList')
+
+    def save_to_db(self, db: Session):
+        db.add(self)
+        db.commit()
+        db.refresh(self)
+
+    def delete_from_db(self, db: Session):
+        db.delete(self)
+        db.commit()
+
+    @staticmethod
+    def get_like_by_id(user_id: str, resource_id: str, db: Session):
+        return db.query(ResourceLikeModel).filter(ResourceLikeModel.user_id == user_id,
+                                                  ResourceLikeModel.resource_id == resource_id).first()

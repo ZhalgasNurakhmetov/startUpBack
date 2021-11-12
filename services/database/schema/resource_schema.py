@@ -1,6 +1,7 @@
-from typing import Optional
+
 
 from pydantic import BaseModel
+from typing import Optional
 
 
 class ResourceBaseSchema(BaseModel):
@@ -34,11 +35,14 @@ class OwnerSchema(BaseModel):
 
 
 class ResourceSchema(ResourceBaseSchema):
+    from typing import List
 
     id: str
     available: bool
+    likes: int
     ownerId: str
     owner: OwnerSchema
+    # likedUserList: List[OwnerSchema] = []
 
     class Config:
         orm_mode = True

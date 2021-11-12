@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from pydantic import BaseModel
 
@@ -11,10 +11,6 @@ class UserBaseSchema(BaseModel):
     city: str
 
 
-class UserCreateSchema(UserBaseSchema):
-    password: str
-
-
 class OwnerSchema(UserBaseSchema):
     id: str
     photo: Optional[str] = None
@@ -24,7 +20,7 @@ class OwnerSchema(UserBaseSchema):
         orm_mode = True
 
 
-class UserResourceSchema(BaseModel):
+class UserResourceBaseSchema(BaseModel):
     id: str
     available: bool
     personal: bool
@@ -39,11 +35,39 @@ class UserResourceSchema(BaseModel):
     format: Optional[str] = None
     description: Optional[str] = None
     condition: Optional[str] = None
+    likes: int
     ownerId: str
     owner: OwnerSchema
 
     class Config:
         orm_mode = True
+
+
+class UserCreateSchema(UserBaseSchema):
+    password: str
+
+
+class UserLikedResourceSchema(BaseModel):
+    id: str
+    user_id: str
+    user: OwnerSchema
+
+    class Config:
+        orm_mode = True
+
+
+class UserLikedResourceListSchema(BaseModel):
+    id: str
+    resource_id: str
+    resource: UserResourceBaseSchema
+
+    class Config:
+        orm_mode = True
+
+
+class UserResourceSchema(UserResourceBaseSchema):
+
+    likedUserList: List[UserLikedResourceSchema] = []
 
 
 class UserSchema(UserBaseSchema):
@@ -52,6 +76,7 @@ class UserSchema(UserBaseSchema):
     photo: Optional[str] = None
     about: Optional[str] = None
     resourceList: List[UserResourceSchema] = []
+    likedResourceList: List[UserLikedResourceListSchema] = []
 
     class Config:
         orm_mode = True
