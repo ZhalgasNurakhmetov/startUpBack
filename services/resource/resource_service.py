@@ -1,6 +1,6 @@
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
-
+from typing import List, Optional
 
 router = InferringRouter()
 
@@ -25,7 +25,8 @@ class Resource:
         from services.database.model.db_base_models import ResourceModel
 
         new_resource_id = str(uuid.uuid4())
-        new_resource = ResourceModel(**resource_info.dict(), id=new_resource_id, ownerId=current_user.id, available=True)
+        new_resource = ResourceModel(**resource_info.dict(), id=new_resource_id, ownerId=current_user.id,
+                                     available=True)
         new_resource.save_to_db(db)
         return new_resource
 
@@ -77,3 +78,41 @@ class Resource:
             raise resource_not_found_exception
         resource.delete_from_db(db)
         return resource
+
+
+@cbv(router)
+class ResourceSearch:
+    from services.database.schema.resource_schema import ResourceSchema
+    from fastapi import Depends
+    from sqlalchemy.orm import Session
+    from services.database.database_service import get_db
+    from services.auth.auth_service import get_current_user
+    from services.database.schema.user_schema import UserSchema
+
+    @router.get('/api/resource/search', response_model=List[ResourceSchema]) #
+    def get_resource_by_search(
+            self,
+            search_text: Optional[str],
+            criteria: Optional[str],
+            literature: Optional[str] = '',
+            language: Optional[str] = '',
+            composition: Optional[str] = '',
+            db: Session = Depends(get_db),
+            current_user: UserSchema = Depends(get_current_user),
+    ):
+        from services.database.model.db_base_models import ResourceModel
+
+        resource_list: List[ResourceModel] = ResourceModel.get_non_personal_resource_list(
+            current_user.id,
+            criteria,
+            search_text,
+            db
+        )
+
+        if literature != '':
+            resource_list = [resource for resource in resource_list if resource.literature == literature]
+        if language != '':
+            resource_list = [resource for resource in resource_list if resource.language == language]
+        if composition != '':
+            resource_list = [resource for resource in resource_list if resource.composition == composition]
+        return resource_list

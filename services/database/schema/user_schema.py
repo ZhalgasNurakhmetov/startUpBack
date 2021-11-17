@@ -1,4 +1,4 @@
-from typing import List, Optional, Any
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -56,18 +56,18 @@ class UserLikedResourceSchema(BaseModel):
         orm_mode = True
 
 
-class UserLikedResourceListSchema(BaseModel):
-    id: str
-    resource_id: str
-    resource: UserResourceBaseSchema
-
-    class Config:
-        orm_mode = True
-
-
 class UserResourceSchema(UserResourceBaseSchema):
 
     likedUserList: List[UserLikedResourceSchema] = []
+
+
+class UserLikedResourceListSchema(BaseModel):
+    id: str
+    resource_id: str
+    resource: UserResourceSchema
+
+    class Config:
+        orm_mode = True
 
 
 class UserSchema(UserBaseSchema):

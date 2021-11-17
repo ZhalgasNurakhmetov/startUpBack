@@ -114,26 +114,3 @@ class Password:
         current_user.password = pwd_context.hash(change_password_info.newPassword)
         current_user.save_to_db(db)
         return current_user
-
-    @staticmethod
-    def send_gmail(recipient_email: str, token: str, host: str):
-        from settings.settings import settings
-        from email.message import EmailMessage
-        import smtplib
-
-        gmail_user = settings.MAIL_USERNAME
-        gmail_password = settings.MAIL_PASSWORD
-        message = EmailMessage()
-        body = '''С вашего аккаунта был отправлен запрос на восстановление пароля.
-                \nЕсли Вы не отправляли запрос, игнорируйте данное сообщение!
-                \nДля восстановления пароля пройдите по ссылке\n{}:8000/api/password/reset/{}'''.format(host, token)
-        message.set_content(body)
-        message['Subject'] = '[Bookberry] Восстановление пароля!'
-        message['From'] = gmail_user
-        message['To'] = recipient_email
-        server = smtplib.SMTP(settings.MAIL_SERVER, settings.MAIL_PORT)
-        server.ehlo()
-        server.starttls()
-        server.login(gmail_user, gmail_password)
-        server.send_message(message)
-        server.close()

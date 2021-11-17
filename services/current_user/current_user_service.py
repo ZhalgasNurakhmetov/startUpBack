@@ -54,25 +54,3 @@ class CurrentUser:
         current_user.about = user_info.about
         current_user.save_to_db(db)
         return current_user
-
-    @staticmethod
-    def send_gmail(recipient_email: str):
-        from settings.settings import settings
-        from email.message import EmailMessage
-        import smtplib
-
-        gmail_user = settings.MAIL_USERNAME
-        gmail_password = settings.MAIL_PASSWORD
-        message = EmailMessage()
-        body = '''Теперь Вы можете добавить книги, которыми Вы готовы поделиться и которые Вы хотели бы получить!
-                \nНайдите людей со схожими интересами!'''
-        message.set_content(body)
-        message['Subject'] = '[Bookberry] Добро пожаловать!'
-        message['From'] = gmail_user
-        message['To'] = recipient_email
-        server = smtplib.SMTP(settings.MAIL_SERVER, settings.MAIL_PORT)
-        server.ehlo()
-        server.starttls()
-        server.login(gmail_user, gmail_password)
-        server.send_message(message)
-        server.close()

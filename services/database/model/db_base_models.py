@@ -73,6 +73,22 @@ class ResourceModel(Base):
     def get_resource_by_id(id: str, db: Session):
         return db.query(ResourceModel).filter(ResourceModel.id == id).first()
 
+    @staticmethod
+    def get_non_personal_resource_list(current_user_id: str, criteria: str, search_text: str, db: Session):
+        if criteria == 'title':
+            return db.query(ResourceModel).filter(
+                (ResourceModel.ownerId != current_user_id) &
+                (ResourceModel.available == True) &
+                (ResourceModel.personal == True) &
+                (ResourceModel.title.ilike('%{}%'.format(search_text)))
+            ).all()
+        return db.query(ResourceModel).filter(
+            (ResourceModel.ownerId != current_user_id) &
+            (ResourceModel.available == True) &
+            (ResourceModel.personal == True) &
+            (ResourceModel.author.ilike('%{}%'.format(search_text)))
+        ).all()
+
 
 class ResourceLikeModel(Base):
     from sqlalchemy import Column, String, ForeignKey
