@@ -12,11 +12,18 @@ from services.database.database_service import get_db
 router = InferringRouter()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth", auto_error=False)
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    from jose import jwt, JWTError
+    from services.database.model.db_base_models import UserModel
+
+    user: UserModel = check_token(token, db)
+    return user
+
+
+def check_token(token: str, db: Session):
+    from jose import jwt
     from settings.settings import settings
     from services.auth.schema.auth_schema import TokenDataSchema
     from datetime import datetime
@@ -32,7 +39,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         if expires is None or datetime.utcnow() > datetime.fromtimestamp(expires):
             raise unauthorized_exception
         token_data = TokenDataSchema(id=user_id, expires=expires)
-    except JWTError:
+    except Exception:
         raise unauthorized_exception
     user: UserModel = UserModel.get_user_by_id(token_data.id, db)
     if user is None:

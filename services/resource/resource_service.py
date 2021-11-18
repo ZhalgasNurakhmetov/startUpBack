@@ -1,6 +1,7 @@
+from typing import List, Optional
+
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
-from typing import List, Optional
 
 router = InferringRouter()
 
@@ -116,3 +117,25 @@ class ResourceSearch:
         if composition != '':
             resource_list = [resource for resource in resource_list if resource.composition == composition]
         return resource_list
+
+
+@cbv(router)
+class ResourceAvailability:
+    from services.database.schema.resource_schema import ResourceSchema
+    from fastapi import Depends
+    from services.auth.auth_service import get_current_user
+    from sqlalchemy.orm import Session
+    from services.database.database_service import get_db
+
+    @router.put('/api/resource/{resource_id}/available', response_model=ResourceSchema)
+    def set_resource_available(
+            self,
+            resource_id: str,
+            _ = Depends(get_current_user),
+            db: Session = Depends(get_db)):
+        from services.database.model.db_base_models import ResourceModel
+
+        resource: ResourceModel = ResourceModel.get_resource_by_id(resource_id, db)
+        resource.available = not resource.available
+        resource.save_to_db(db)
+        return resource

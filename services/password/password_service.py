@@ -1,6 +1,7 @@
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 
+from services.auth.auth_service import check_token
 
 router = InferringRouter()
 
@@ -61,32 +62,14 @@ class Password:
             new_password_info: NewPasswordSchema,
             db: Session = Depends(get_db)
     ):
-        from jose import jwt, JWTError
-        from settings.settings import settings
-        from datetime import datetime
         from services.error_handler.error_handler_service import new_passwords_not_equal_exception
-        from services.auth.schema.auth_schema import TokenDataSchema
         from services.auth.auth_service import pwd_context
         from starlette.templating import Jinja2Templates
         from services.database.model.db_base_models import UserModel
-        from services.error_handler.error_handler_service import user_not_found_exception, unauthorized_exception
 
         if not new_password_info.newPassword == new_password_info.newPasswordConfirm:
             raise new_passwords_not_equal_exception
-        try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-            user_id: str = payload.get("sub")
-            expires: datetime = payload.get("exp")
-            if user_id is None:
-                raise user_not_found_exception
-            if expires is None or datetime.utcnow() > datetime.fromtimestamp(expires):
-                raise unauthorized_exception
-            token_data = TokenDataSchema(id=user_id, expires=expires)
-        except JWTError:
-            raise unauthorized_exception
-        user: UserModel = UserModel.get_user_by_id(token_data.id, db)
-        if user is None:
-            raise user_not_found_exception
+        user: UserModel = check_token(token, db)
         user.password = pwd_context.hash(new_password_info.newPassword)
         user.save_to_db(db)
 
