@@ -1,3 +1,4 @@
+from fastapi import Form
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 
@@ -11,7 +12,6 @@ class Password:
     from services.password.schema.password_schema import PasswordResetSchema
     from fastapi.responses import HTMLResponse
     from fastapi import Request
-    from services.password.schema.password_schema import NewPasswordSchema
     from services.password.schema.password_schema import ChangePasswordSchema
     from services.auth.auth_service import get_current_user
     from fastapi import Depends
@@ -59,7 +59,7 @@ class Password:
             self,
             request: Request,
             token: str,
-            new_password_info: NewPasswordSchema,
+            newPassword: str = Form(...), newPasswordConfirm: str = Form(...),
             db: Session = Depends(get_db)
     ):
         from services.error_handler.error_handler_service import new_passwords_not_equal_exception
@@ -67,13 +67,12 @@ class Password:
         from starlette.templating import Jinja2Templates
         from services.database.model.db_base_models import UserModel
 
-        if not new_password_info.newPassword == new_password_info.newPasswordConfirm:
+        if not newPassword == newPasswordConfirm:
             raise new_passwords_not_equal_exception
         user: UserModel = check_token(token, db)
-        user.password = pwd_context.hash(new_password_info.newPassword)
+        user.password = pwd_context.hash(newPassword)
         user.save_to_db(db)
 
-        # TODO works in postman, in browser something is wrong
         templates = Jinja2Templates(directory="templates")
         return templates.TemplateResponse('reset_password_final.html', {
             'request': request,

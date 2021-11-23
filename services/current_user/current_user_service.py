@@ -54,3 +54,40 @@ class CurrentUser:
         current_user.about = user_info.about
         current_user.save_to_db(db)
         return current_user
+
+
+@cbv(router)
+class UserContact:
+    from services.auth.auth_service import get_current_user
+    from services.database.model.db_base_models import UserModel
+    from fastapi import Depends
+    from sqlalchemy.orm import Session
+    from services.database.database_service import get_db
+    from services.database.schema.user_schema import UserSchema
+
+    @router.post('/api/user/follow/{user_id}', response_model=UserSchema)
+    def follow_user(
+            self, user_id: str,
+            current_user: UserModel = Depends(get_current_user),
+            db: Session = Depends(get_db)
+    ):
+        from services.database.model.db_base_models import UserModel
+
+        user: UserModel = UserModel.get_user_by_id(user_id, db)
+        current_user.following.append(user)
+        current_user.save_to_db(db)
+        return current_user
+
+    @router.post('/api/user/unfollow/{user_id}', response_model=UserSchema)
+    def follow_user(
+            self, user_id: str,
+            current_user: UserModel = Depends(get_current_user),
+            db: Session = Depends(get_db)
+    ):
+        from services.database.model.db_base_models import UserModel
+
+        user: UserModel = UserModel.get_user_by_id(user_id, db)
+        current_user.following.remove(user)
+        current_user.save_to_db(db)
+        return current_user
+

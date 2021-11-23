@@ -1,3 +1,5 @@
+from sqlalchemy import Table, Column, String, ForeignKey
+
 from services.database.database_service import Base
 
 
@@ -17,9 +19,13 @@ class UserModel(Base):
     about = Column(Text, nullable=True, default=None)
     photo = Column(String, nullable=True, default=None)
     resourceList = relationship('ResourceModel', back_populates='owner')
-    likedResourceList = relationship('ResourceLikeModel', foreign_keys='ResourceLikeModel.user_id')
-
-    # followed
+    favoriteResourceList = relationship('ResourceLikeModel', foreign_keys='ResourceLikeModel.userId')
+    following = relationship(
+        'UserModel', lambda: user_following,
+        primaryjoin=lambda: UserModel.id == user_following.c.userId,
+        secondaryjoin=lambda: UserModel.id == user_following.c.followingId,
+        backref='followers'
+    )
 
     def save_to_db(self, db: Session):
         db.add(self)
@@ -44,6 +50,7 @@ class ResourceModel(Base):
     id = Column(String, primary_key=True, unique=True)
     personal = Column(Boolean, nullable=False)
     available = Column(Boolean, nullable=False, default=True)
+    image = Column(String, nullable=True)
     title = Column(String, nullable=False)
     author = Column(String, nullable=False)
     year = Column(String, nullable=True, default=None)
@@ -58,7 +65,7 @@ class ResourceModel(Base):
     likes = Column(Integer, nullable=False, default=0)
     ownerId = Column(String, ForeignKey('users.id'))
     owner = relationship('UserModel', back_populates='resourceList')
-    likedUserList = relationship('ResourceLikeModel', back_populates='resource')
+    favoriteUserList = relationship('ResourceLikeModel', back_populates='resource')
 
     def save_to_db(self, db: Session):
         db.add(self)
@@ -97,10 +104,10 @@ class ResourceLikeModel(Base):
     __tablename__ = 'resource_like'
 
     id = Column(String, primary_key=True, unique=True)
-    user_id = Column(String, ForeignKey('users.id'))
-    resource_id = Column(String, ForeignKey('resources.id'))
-    user = relationship('UserModel', back_populates='likedResourceList')
-    resource = relationship('ResourceModel', back_populates='likedUserList')
+    userId = Column(String, ForeignKey('users.id'))
+    resourceId = Column(String, ForeignKey('resources.id'))
+    user = relationship('UserModel', back_populates='favoriteResourceList')
+    resource = relationship('ResourceModel', back_populates='favoriteUserList')
 
     def save_to_db(self, db: Session):
         db.add(self)
@@ -113,5 +120,12 @@ class ResourceLikeModel(Base):
 
     @staticmethod
     def get_like_by_id(user_id: str, resource_id: str, db: Session):
-        return db.query(ResourceLikeModel).filter(ResourceLikeModel.user_id == user_id,
-                                                  ResourceLikeModel.resource_id == resource_id).first()
+        return db.query(ResourceLikeModel).filter(ResourceLikeModel.userId == user_id,
+                                                  ResourceLikeModel.resourceId == resource_id).first()
+
+
+user_following = Table(
+    'user_following', Base.metadata,
+    Column('userId', String, ForeignKey(UserModel.id), primary_key=True),
+    Column('followingId', String, ForeignKey(UserModel.id), primary_key=True)
+)

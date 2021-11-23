@@ -17,7 +17,7 @@ class UserResource:
         from services.database.model.db_base_models import ResourceLikeModel, ResourceModel
 
         new_resource_like_id = str(uuid.uuid4())
-        new_resource_like = ResourceLikeModel(id=new_resource_like_id, user_id=user_id, resource_id=resource_id)
+        new_resource_like = ResourceLikeModel(id=new_resource_like_id, userId=user_id, resourceId=resource_id)
         resource: ResourceModel = ResourceModel.get_resource_by_id(resource_id, db)
         resource.likes = resource.likes + 1
         new_resource_like.save_to_db(db)

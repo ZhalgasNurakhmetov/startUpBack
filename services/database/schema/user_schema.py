@@ -24,6 +24,7 @@ class UserResourceBaseSchema(BaseModel):
     id: str
     available: bool
     personal: bool
+    image: str
     title: str
     author: str
     year: Optional[str] = None
@@ -49,7 +50,7 @@ class UserCreateSchema(UserBaseSchema):
 
 class UserLikedResourceSchema(BaseModel):
     id: str
-    user_id: str
+    userId: str
     user: OwnerSchema
 
     class Config:
@@ -58,12 +59,12 @@ class UserLikedResourceSchema(BaseModel):
 
 class UserResourceSchema(UserResourceBaseSchema):
 
-    likedUserList: List[UserLikedResourceSchema] = []
+    favoriteUserList: List[UserLikedResourceSchema] = []
 
 
 class UserLikedResourceListSchema(BaseModel):
     id: str
-    resource_id: str
+    resourceId: str
     resource: UserResourceSchema
 
     class Config:
@@ -76,7 +77,9 @@ class UserSchema(UserBaseSchema):
     photo: Optional[str] = None
     about: Optional[str] = None
     resourceList: List[UserResourceSchema] = []
-    likedResourceList: List[UserLikedResourceListSchema] = []
+    favoriteResourceList: List[UserLikedResourceListSchema] = []
+    following: List[OwnerSchema] = []
+    followers: List[OwnerSchema] = []
 
     class Config:
         orm_mode = True
