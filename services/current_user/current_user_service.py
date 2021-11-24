@@ -67,7 +67,8 @@ class UserContact:
 
     @router.post('/api/user/follow/{user_id}', response_model=UserSchema)
     def follow_user(
-            self, user_id: str,
+            self,
+            user_id: str,
             current_user: UserModel = Depends(get_current_user),
             db: Session = Depends(get_db)
     ):
@@ -79,7 +80,7 @@ class UserContact:
         return current_user
 
     @router.post('/api/user/unfollow/{user_id}', response_model=UserSchema)
-    def follow_user(
+    def unfollow_user(
             self, user_id: str,
             current_user: UserModel = Depends(get_current_user),
             db: Session = Depends(get_db)
