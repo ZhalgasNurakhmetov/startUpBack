@@ -123,6 +123,10 @@ class ResourceLikeModel(Base):
         return db.query(ResourceLikeModel).filter(ResourceLikeModel.userId == user_id,
                                                   ResourceLikeModel.resourceId == resource_id).first()
 
+    # @staticmethod
+    # def get_like_by_resource_id(resource_id: str, db: Session):
+    #     return db.query(ResourceLikeModel).filter(ResourceLikeModel.resourceId == resource_id).all()
+
 
 user_following = Table(
     'user_following', Base.metadata,

@@ -26,6 +26,11 @@ class Resource:
         from services.database.model.db_base_models import ResourceModel
 
         new_resource_id = str(uuid.uuid4())
+        resource_info.title = resource_info.title.strip()
+        resource_info.author = resource_info.author.strip()
+        resource_info.year = resource_info.year.strip()
+        resource_info.description = resource_info.description.strip()
+        resource_info.pageCount = resource_info.pageCount.strip()
         new_resource = ResourceModel(**resource_info.dict(), id=new_resource_id, ownerId=current_user.id,
                                      available=True)
         new_resource.save_to_db(db)
@@ -48,16 +53,16 @@ class Resource:
         if not resource:
             raise resource_not_found_exception
         resource.personal = resource_info.personal
-        resource.title = resource_info.title
-        resource.author = resource_info.author
-        resource.year = resource_info.year
-        resource.pageCount = resource_info.pageCount
+        resource.title = resource_info.title.strip()
+        resource.author = resource_info.author.strip()
+        resource.year = resource_info.year.strip()
+        resource.pageCount = resource_info.pageCount.strip()
         resource.literature = resource_info.literature
         resource.cover = resource_info.cover
         resource.language = resource_info.language
         resource.composition = resource_info.composition
         resource.format = resource_info.format
-        resource.description = resource_info.description
+        resource.description = resource_info.description.strip()
         resource.condition = resource_info.condition
         resource.save_to_db(db)
         return resource
@@ -77,6 +82,8 @@ class Resource:
         resource: ResourceModel = ResourceModel.get_resource_by_id(resource_id, db)
         if not resource:
             raise resource_not_found_exception
+        for like in resource.favoriteUserList:
+            like.delete_from_db(db)
         resource.delete_from_db(db)
         return resource
 
@@ -106,7 +113,7 @@ class ResourceSearch:
         resource_list: List[ResourceModel] = ResourceModel.get_non_personal_resource_list(
             current_user.id,
             criteria,
-            search_text,
+            search_text.strip(),
             db
         )
 

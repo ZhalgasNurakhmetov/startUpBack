@@ -61,11 +61,13 @@ class UserResourceSchema(UserResourceBaseSchema):
 
     favoriteUserList: List[UserLikedResourceSchema] = []
 
+# TODO remove Optional before prod
+
 
 class UserLikedResourceListSchema(BaseModel):
     id: str
-    resourceId: str
-    resource: UserResourceSchema
+    resourceId: Optional[str]
+    resource: Optional[UserResourceSchema]
 
     class Config:
         orm_mode = True
