@@ -8,7 +8,7 @@ class ResourceBaseSchema(BaseModel):
     personal: bool
     title: str
     author: str
-    image: str
+    image: Optional[str] = None
     year: Optional[str] = None
     pageCount: Optional[str] = None
     literature: str
@@ -52,6 +52,23 @@ class ResourceSchema(ResourceBaseSchema):
     ownerId: str
     owner: OwnerSchema
     favoriteUserList: List[UserLikedResourceListSchema] = []
+
+    class Config:
+        orm_mode = True
+
+
+class FavoriteListSchema(BaseModel):
+    id: str
+    resourceId: Optional[str]
+    resource: Optional[ResourceSchema]
+
+    class Config:
+        orm_mode = True
+
+
+class FavoriteSchema(BaseModel):
+    resource: ResourceSchema
+    favorite: FavoriteListSchema
 
     class Config:
         orm_mode = True

@@ -10,8 +10,9 @@ class UserResource:
     from sqlalchemy.orm import Session
     from fastapi import Depends
     from services.database.database_service import get_db
+    from services.database.schema.resource_schema import FavoriteSchema
 
-    @router.post('/api/user/{user_id}/like/{resource_id}')
+    @router.post('/api/user/{user_id}/like/{resource_id}', response_model=FavoriteSchema)
     def like_resource(self, user_id: str, resource_id: str, db: Session = Depends(get_db)):
         import uuid
         from services.database.model.db_base_models import ResourceLikeModel, ResourceModel
@@ -22,9 +23,12 @@ class UserResource:
         resource.likes = resource.likes + 1
         new_resource_like.save_to_db(db)
         resource.save_to_db(db)
-        return
+        return {
+            "resource": resource,
+            "favorite": new_resource_like,
+        }
 
-    @router.delete('/api/user/{user_id}/unlike/{resource_id}')
+    @router.delete('/api/user/{user_id}/unlike/{resource_id}', response_model=FavoriteSchema)
     def unlike_resource(self, user_id: str, resource_id: str, db: Session = Depends(get_db)):
         from services.database.model.db_base_models import ResourceLikeModel, ResourceModel
 
@@ -33,4 +37,7 @@ class UserResource:
         resource.likes = resource.likes - 1
         resource_like.delete_from_db(db)
         resource.save_to_db(db)
-        return
+        return {
+            "resource": resource,
+            "favorite": resource_like,
+        }

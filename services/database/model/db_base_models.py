@@ -50,7 +50,7 @@ class ResourceModel(Base):
     id = Column(String, primary_key=True, unique=True)
     personal = Column(Boolean, nullable=False)
     available = Column(Boolean, nullable=False, default=True)
-    image = Column(String, nullable=True)
+    image = Column(String, nullable=True, default=None)
     title = Column(String, nullable=False)
     author = Column(String, nullable=False)
     year = Column(String, nullable=True, default=None)

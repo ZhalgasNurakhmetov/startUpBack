@@ -28,9 +28,12 @@ class Resource:
         new_resource_id = str(uuid.uuid4())
         resource_info.title = resource_info.title.strip()
         resource_info.author = resource_info.author.strip()
-        resource_info.year = resource_info.year.strip()
-        resource_info.description = resource_info.description.strip()
-        resource_info.pageCount = resource_info.pageCount.strip()
+        if resource_info.year:
+            resource_info.year = resource_info.year.strip()
+        if resource_info.description:
+            resource_info.description = resource_info.description.strip()
+        if resource_info.pageCount:
+            resource_info.pageCount = resource_info.pageCount.strip()
         new_resource = ResourceModel(**resource_info.dict(), id=new_resource_id, ownerId=current_user.id,
                                      available=True)
         new_resource.save_to_db(db)
@@ -55,14 +58,17 @@ class Resource:
         resource.personal = resource_info.personal
         resource.title = resource_info.title.strip()
         resource.author = resource_info.author.strip()
-        resource.year = resource_info.year.strip()
-        resource.pageCount = resource_info.pageCount.strip()
+        if resource_info.year:
+            resource_info.year = resource_info.year.strip()
+        if resource_info.pageCount:
+            resource_info.pageCount = resource_info.pageCount.strip()
         resource.literature = resource_info.literature
         resource.cover = resource_info.cover
         resource.language = resource_info.language
         resource.composition = resource_info.composition
         resource.format = resource_info.format
-        resource.description = resource_info.description.strip()
+        if resource_info.description:
+            resource_info.description = resource_info.description.strip()
         resource.condition = resource_info.condition
         resource.save_to_db(db)
         return resource
@@ -97,10 +103,10 @@ class ResourceSearch:
     from services.auth.auth_service import get_current_user
     from services.database.schema.user_schema import UserSchema
 
-    @router.get('/api/resource/search', response_model=List[ResourceSchema]) #
+    @router.get('/api/resource/search', response_model=List[ResourceSchema])
     def get_resource_by_search(
             self,
-            search_text: Optional[str],
+            searchText: Optional[str],
             criteria: Optional[str],
             literature: Optional[str] = '',
             language: Optional[str] = '',
@@ -113,9 +119,11 @@ class ResourceSearch:
         resource_list: List[ResourceModel] = ResourceModel.get_non_personal_resource_list(
             current_user.id,
             criteria,
-            search_text.strip(),
+            searchText.strip(),
             db
         )
+
+        resource_list = [resource for resource in resource_list if resource.owner.city == current_user.city]
 
         if literature != '':
             resource_list = [resource for resource in resource_list if resource.literature == literature]

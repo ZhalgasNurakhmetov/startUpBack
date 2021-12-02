@@ -24,7 +24,7 @@ class UserResourceBaseSchema(BaseModel):
     id: str
     available: bool
     personal: bool
-    image: str
+    image: Optional[str] = None
     title: str
     author: str
     year: Optional[str] = None
