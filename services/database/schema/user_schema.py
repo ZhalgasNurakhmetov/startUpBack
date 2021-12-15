@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from pydantic import BaseModel
 
@@ -13,7 +13,7 @@ class UserBaseSchema(BaseModel):
 
 class OwnerSchema(UserBaseSchema):
     id: str
-    photo: Optional[str] = None
+    photoPath: Optional[str] = None
     about: Optional[str] = None
 
     class Config:
@@ -24,7 +24,7 @@ class UserResourceBaseSchema(BaseModel):
     id: str
     available: bool
     personal: bool
-    image: Optional[str] = None
+    imagePath: Optional[str] = None
     title: str
     author: str
     year: Optional[str] = None
@@ -73,10 +73,40 @@ class UserLikedResourceListSchema(BaseModel):
         orm_mode = True
 
 
+class UserMessageSchema(BaseModel):
+    id: str
+    chatId: str
+    userId: str
+    userInfo: OwnerSchema
+    message: str
+    isRed: bool
+    dateTime: str
+
+    class Config:
+        orm_mode = True
+
+
+class UserChatBaseSchema(BaseModel):
+    firstUserInfo: str
+    secondUserInfo: str
+    firstUserPhotoPath: Optional[str] = None
+    secondUserPhotoPath: Optional[str] = None
+
+
+class UserChatSchema(UserChatBaseSchema):
+    id: str
+    firstUserId: str
+    secondUserId: str
+    messages: List[UserMessageSchema] = []
+
+    class Config:
+        orm_mode = True
+
+
 class UserSchema(UserBaseSchema):
 
     id: str
-    photo: Optional[str] = None
+    photoPath: Optional[str] = None
     about: Optional[str] = None
     resourceList: List[UserResourceSchema] = []
     favoriteResourceList: List[UserLikedResourceListSchema] = []

@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, String, ForeignKey
+from sqlalchemy import Table, Column, String, ForeignKey, select
 
 from services.database.database_service import Base
 
@@ -17,7 +17,7 @@ class UserModel(Base):
     password = Column(String, nullable=False)
     city = Column(String, nullable=False)
     about = Column(Text, nullable=True, default=None)
-    photo = Column(String, nullable=True, default=None)
+    photoPath = Column(String, nullable=True, default=None)
     resourceList = relationship('ResourceModel', back_populates='owner')
     favoriteResourceList = relationship('ResourceLikeModel', foreign_keys='ResourceLikeModel.userId')
     following = relationship(
@@ -26,6 +26,23 @@ class UserModel(Base):
         secondaryjoin=lambda: UserModel.id == user_following.c.followingId,
         backref='followers'
     )
+    # chats = relationship(
+    #     'ChatModel', lambda: ChatModel,
+    #     primaryjoin=lambda: UserModel.id == ChatModel.firstUserId,
+    #     secondaryjoin=lambda: UserModel.id == ChatModel.secondUserId,
+    # )
+
+    def json(self):
+        return {
+            "id": self.id,
+            "photoPath": self.photoPath,
+            "firstName": self.firstName,
+            "lastName": self.lastName,
+            "birthDate": self.birthDate,
+            "city": self.city,
+            "about": self.about,
+            "username": self.username
+        }
 
     def save_to_db(self, db: Session):
         db.add(self)
@@ -50,7 +67,7 @@ class ResourceModel(Base):
     id = Column(String, primary_key=True, unique=True)
     personal = Column(Boolean, nullable=False)
     available = Column(Boolean, nullable=False, default=True)
-    image = Column(String, nullable=True, default=None)
+    imagePath = Column(String, nullable=True, default=None)
     title = Column(String, nullable=False)
     author = Column(String, nullable=False)
     year = Column(String, nullable=True, default=None)
@@ -123,9 +140,10 @@ class ResourceLikeModel(Base):
         return db.query(ResourceLikeModel).filter(ResourceLikeModel.userId == user_id,
                                                   ResourceLikeModel.resourceId == resource_id).first()
 
-    # @staticmethod
-    # def get_like_by_resource_id(resource_id: str, db: Session):
-    #     return db.query(ResourceLikeModel).filter(ResourceLikeModel.resourceId == resource_id).all()
+    @staticmethod
+    def delete_like_by_resource_id(resource_id: str, db: Session):
+        db.delete(db.query(ResourceLikeModel).filter(ResourceLikeModel.resourceId == resource_id).all())
+        db.commit()
 
 
 user_following = Table(
@@ -133,3 +151,64 @@ user_following = Table(
     Column('userId', String, ForeignKey(UserModel.id), primary_key=True),
     Column('followingId', String, ForeignKey(UserModel.id), primary_key=True)
 )
+
+
+class ChatModel(Base):
+    from sqlalchemy.orm import relationship, Session
+    from sqlalchemy import Column, String
+
+    __tablename__ = 'chats'
+
+    id = Column(String, primary_key=True, unique=True)
+    firstUserId = Column(String, nullable=False)
+    secondUserId = Column(String, nullable=False)
+    firstUserInfo = Column(String, nullable=False)
+    secondUserInfo = Column(String, nullable=False)
+    firstUserPhotoPath = Column(String, nullable=True)
+    secondUserPhotoPath = Column(String, nullable=True)
+    messages = relationship('MessageModel', foreign_keys='MessageModel.chatId')
+
+    def save_to_db(self, db: Session):
+        db.add(self)
+        db.commit()
+        db.refresh(self)
+
+    @staticmethod
+    def get_all_chats(user_id: str, db: Session):
+        from sqlalchemy import or_
+
+        return db.query(ChatModel).where(or_(
+            ChatModel.firstUserId == user_id,
+            ChatModel.secondUserId == user_id
+        )).all()
+
+
+class MessageModel(Base):
+    from sqlalchemy import Column, String, ForeignKey, Text, Boolean
+    from sqlalchemy.orm import relationship, Session
+
+    __tablename__ = 'messages'
+
+    id = Column(String, primary_key=True, unique=True)
+    chatId = Column(String, ForeignKey('chats.id'))
+    userId = Column(String, ForeignKey('users.id'))
+    userInfo = relationship('UserModel')
+    message = Column(Text, nullable=False)
+    isRed = Column(Boolean, nullable=False)
+    dateTime = Column(String, nullable=False)
+
+    def json(self):
+        return {
+            "id": self.id,
+            "chatId": self.chatId,
+            "userId": self.userId,
+            "userInfo": self.userInfo.json(),
+            "message": self.message,
+            "isRed": self.isRed,
+            "dateTime": self.dateTime
+        }
+
+    def save_to_db(self, db: Session):
+        db.add(self)
+        db.commit()
+        db.refresh(self)

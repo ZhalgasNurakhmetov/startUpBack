@@ -41,3 +41,8 @@ current_password_exception = HTTPException(
     status_code=status.HTTP_406_NOT_ACCEPTABLE,
     detail="Неверный текущий пароль"
 )
+
+invalid_file_extension_exception = HTTPException(
+    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+    detail="Формат файла должен быть jpeg, jpg или png"
+)

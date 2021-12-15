@@ -8,7 +8,7 @@ class ResourceBaseSchema(BaseModel):
     personal: bool
     title: str
     author: str
-    image: Optional[str] = None
+    imagePath: Optional[str] = None
     year: Optional[str] = None
     pageCount: Optional[str] = None
     literature: str
@@ -22,7 +22,7 @@ class ResourceBaseSchema(BaseModel):
 
 class OwnerSchema(BaseModel):
     id: str
-    photo: Optional[str] = None
+    photoPath: Optional[str] = None
     about: Optional[str] = None
     firstName: str
     lastName: str

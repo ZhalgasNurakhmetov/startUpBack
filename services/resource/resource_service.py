@@ -81,15 +81,16 @@ class Resource:
             db: Session = Depends(get_db)
     ):
         from services.error_handler.error_handler_service import unauthorized_exception, resource_not_found_exception
-        from services.database.model.db_base_models import ResourceModel
+        from services.database.model.db_base_models import ResourceModel, ResourceLikeModel
 
         if not current_user:
             raise unauthorized_exception
         resource: ResourceModel = ResourceModel.get_resource_by_id(resource_id, db)
         if not resource:
             raise resource_not_found_exception
-        for like in resource.favoriteUserList:
-            like.delete_from_db(db)
+        # for like in resource.favoriteUserList:
+        #     like.delete_from_db(db)
+        ResourceLikeModel.delete_like_by_resource_id(resource.id, db)
         resource.delete_from_db(db)
         return resource
 
