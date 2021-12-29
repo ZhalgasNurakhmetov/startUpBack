@@ -1,6 +1,3 @@
-import uuid
-from typing import Optional
-
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
@@ -8,7 +5,6 @@ from starlette.websockets import WebSocket
 
 from services.chat.chat_service import ConnectionManager
 from services.database.database_service import engine, Base, get_db
-from services.database.model.db_base_models import MessageModel
 from services.routes.routes_service import initialize_routes
 
 Base.metadata.create_all(engine, checkfirst=True)
@@ -31,8 +27,12 @@ app.add_middleware(
 
 initialize_routes(app)
 
+
 @app.websocket("/ws/{user_id}")
 async def webSocket_endpoint(webSocket: WebSocket, user_id: str, db: Session = Depends(get_db)):
+    import uuid
+    from services.database.model.db_base_models import MessageModel
+
     await webSocket_manager.connect(user_id, webSocket)
     while True:
         message = await webSocket.receive_json()

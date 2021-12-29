@@ -6,6 +6,7 @@ from services.user_resource.user_resource_service import router as UserResourceR
 from services.user.user_service import router as UserServiceRouter
 from services.chat.chat_service import router as ChatServiceRouter
 from services.photo.photo_service import router as PhotoServiceRouter
+from services.image.image_service import router as ImageServiceRouter
 
 
 def initialize_routes(app):
@@ -17,3 +18,4 @@ def initialize_routes(app):
     app.include_router(UserServiceRouter)
     app.include_router(ChatServiceRouter)
     app.include_router(PhotoServiceRouter)
+    app.include_router(ImageServiceRouter)

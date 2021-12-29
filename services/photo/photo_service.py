@@ -3,8 +3,6 @@ import os
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 
-from services.error_handler.error_handler_service import invalid_file_extension_exception
-
 path = os.getcwd()
 ALLOWED_EXTENSIONS = {'jpeg', 'jpg', 'png'}
 PHOTOS_FOLDER = os.path.join(path, 'saved', 'photos')
@@ -32,6 +30,7 @@ class Photo:
         import shutil
         from typing import List
         from services.database.model.db_base_models import ChatModel
+        from services.error_handler.error_handler_service import invalid_file_extension_exception
 
         if not allowed_file(photo.content_type):
             raise invalid_file_extension_exception

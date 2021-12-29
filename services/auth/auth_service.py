@@ -78,9 +78,8 @@ class Auth:
         from services.database.model.db_base_models import UserModel
         from services.error_handler.error_handler_service import user_not_found_exception, credentials_exception
 
-        try:
-            user: UserModel = UserModel.get_user_by_username(credentials.username, db)
-        except Exception:
+        user: UserModel = UserModel.get_user_by_username(credentials.username, db)
+        if not user:
             raise user_not_found_exception
         if not pwd_context.verify(credentials.password, user.password):
             raise credentials_exception
