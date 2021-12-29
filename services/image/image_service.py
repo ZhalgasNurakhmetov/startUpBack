@@ -31,7 +31,7 @@ class Image:
 
         if not allowed_file(image.content_type):
             raise invalid_file_extension_exception
-        image_path = 'app/saved/images/{}'.format(resource_id)
+        image_path = 'saved/images/{}'.format(resource_id)
         with open(image_path, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
         resource: ResourceModel = ResourceModel.get_resource_by_id(resource_id, db)
@@ -39,6 +39,6 @@ class Image:
         resource.save_to_db(db)
         return resource
 
-    @router.get('/app/saved/images/{resource_id}', response_class=FileResponse)
+    @router.get('/saved/images/{resource_id}', response_class=FileResponse)
     def display_image(self, resource_id: str):
-        return 'app/saved/images/{}'.format(resource_id)
+        return 'saved/images/{}'.format(resource_id)
