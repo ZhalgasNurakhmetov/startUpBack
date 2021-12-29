@@ -11,15 +11,11 @@ Base.metadata.create_all(engine, checkfirst=True)
 
 app = FastAPI(title="Bookberry server", version="0.1.0")
 
-origins = [
-    "http://localhost:8100",
-]
-
 webSocket_manager = ConnectionManager()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=['*'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
