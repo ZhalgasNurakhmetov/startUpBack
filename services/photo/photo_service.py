@@ -35,7 +35,7 @@ class Photo:
         if not allowed_file(photo.content_type):
             raise invalid_file_extension_exception
 
-        photo_path = 'saved/photos/{}'.format(current_user.id)
+        photo_path = 'app/saved/photos/{}'.format(current_user.id)
         with open(photo_path, "wb") as buffer:
             shutil.copyfileobj(photo.file, buffer)
         current_user.photoPath = '/{}'.format(photo_path)
@@ -49,6 +49,6 @@ class Photo:
         current_user.save_to_db(db)
         return current_user
 
-    @router.get('/saved/photos/{user_id}', response_class=FileResponse)
+    @router.get('/app/saved/photos/{user_id}', response_class=FileResponse)
     def display_photo(self, user_id: str):
-        return 'saved/photos/{}'.format(user_id)
+        return 'app/saved/photos/{}'.format(user_id)
