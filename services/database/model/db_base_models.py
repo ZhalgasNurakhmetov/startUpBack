@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, String, ForeignKey, select
+from sqlalchemy import Table, Column, String, ForeignKey
 
 from services.database.database_service import Base
 
@@ -212,3 +212,7 @@ class MessageModel(Base):
         db.add(self)
         db.commit()
         db.refresh(self)
+
+    @staticmethod
+    def get_messages_by_chat_id(chat_id: str, db: Session):
+        return db.query(MessageModel).filter(MessageModel.chatId == chat_id).all()

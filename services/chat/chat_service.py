@@ -44,5 +44,8 @@ class ConnectionManager:
         self.connections[user_id] = webSocket
 
     async def send_personal_message(self, message: Any, user_id: str, contact_id: str):
-        # await self.connections[contact_id].send_json(message)
+        await self.connections[contact_id].send_json(message)
         await self.connections[user_id].send_json(message)
+
+    async def read_message(self, contact_id: str):
+        await self.connections[contact_id].send_text('req')
