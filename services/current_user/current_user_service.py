@@ -28,12 +28,12 @@ class CurrentUser:
         user.password = pwd_context.hash(user.password)
         new_user = UserModel(**user.dict(), id=new_user_id)
         new_user.save_to_db(db)
-        Mail.send_email(
-            user.username,
-            '[Bookberry] Добро пожаловать!',
-            '''Теперь Вы можете добавить книги, которыми Вы готовы поделиться и которые Вы хотели бы получить!
-                \nНайдите людей со схожими интересами'''
-        )
+        # Mail.send_email(
+        #     user.username,
+        #     '[Bookberry] Добро пожаловать!',
+        #     '''Теперь Вы можете добавить книги, которыми Вы готовы поделиться и которые Вы хотели бы получить!
+        #         \nНайдите людей со схожими интересами'''
+        # )
         return new_user
 
     @router.get('/api/current_user/me', response_model=UserSchema)

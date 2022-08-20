@@ -35,14 +35,14 @@ class Password:
             raise user_not_found_exception
         access_token_expires = timedelta(minutes=15)
         token = generate_access_token(data={"sub": user.id}, expires_delta=access_token_expires)
-        Mail.send_email(
-            user.username,
-            '[Bookberry] Восстановление пароля!',
-            '''С вашего аккаунта был отправлен запрос на восстановление пароля.
-                \nЕсли Вы не отправляли запрос, игнорируйте данное сообщение!
-                \nДля восстановления пароля пройдите по ссылке\n{}:8000/api/password/reset/{}'''
-                .format(request.client.host, token['access_token'])
-        )
+        # Mail.send_email(
+        #     user.username,
+        #     '[Bookberry] Восстановление пароля!',
+        #     '''С вашего аккаунта был отправлен запрос на восстановление пароля.
+        #         \nЕсли Вы не отправляли запрос, игнорируйте данное сообщение!
+        #         \nДля восстановления пароля пройдите по ссылке\n{}:8000/api/password/reset/{}'''
+        #         .format(request.client.host, token['access_token'])
+        # )
 
     @router.get('/api/password/reset/{token}', response_class=HTMLResponse)
     def get_reset_password_form(self, request: Request, token: str):
